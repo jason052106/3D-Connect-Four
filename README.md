@@ -38,9 +38,7 @@
 * .NET Framework 或 .NET Core / .NET 5+ (依專案設定而定)
 
 ### 安裝與啟動步驟
-1. 將此專案 Clone 到本地端：
-   ```bash
-   git clone [https://github.com/您的帳號/您的專案名稱.git](https://github.com/您的帳號/您的專案名稱.git)使用 Visual Studio 打開專案中的 .sln (方案檔)。
+1. 
 
 2.按下 F5 或點擊 「開始」 編譯並執行遊戲。
 
