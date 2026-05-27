@@ -20,12 +20,13 @@
 
 ## 📸 遊戲畫面 (Screenshots)
 
-> **📝 提示：** 您可以將遊戲畫面截圖上傳到 GitHub，並替換下方的圖片連結。
 
-![主選單畫面預覽](放入您的主選單圖片網址或相對路徑)
+<img width="384" height="338" alt="image" src="https://github.com/user-attachments/assets/99610e4b-cec9-4691-9ed5-7a886f2a65d4" />
+
 *清晰的主選單，可選擇遊玩模式*
 
-![遊戲畫面預覽](放入您的遊戲畫面圖片網址或相對路徑)
+<img width="633" height="636" alt="image" src="https://github.com/user-attachments/assets/169aed82-8dc5-4d59-85d3-fe79d762df79" />
+
 *遊戲進行畫面，包含自訂名稱與滑鼠懸停效果*
 
 ---
@@ -38,7 +39,7 @@
 * .NET Framework 或 .NET Core / .NET 5+ (依專案設定而定)
 
 ### 安裝與啟動步驟
-1. 
+1. 將此專案 Clone 到本地端：https://github.com/jason052106/3D-Connect-Four.git
 
 2.按下 F5 或點擊 「開始」 編譯並執行遊戲。
 
@@ -57,11 +58,3 @@
 
 遊戲結束後，點擊畫面任意處或「重新開始」按鈕即可開啟新局。
 
-🛠️ 技術細節 (Technologies Used)
-語言: C#
-
-框架: Windows Forms
-
-繪圖: System.Drawing.Graphics (GDI+)
-
-音效: System.Media.SoundPlayer / SystemSounds
