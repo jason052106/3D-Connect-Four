@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Media; // 新增這行來使用 SoundPlayer
 
 namespace _3D_Connect_Four
 {
@@ -27,6 +28,7 @@ namespace _3D_Connect_Four
         private CheckBox chkVsAI;
         private bool isVsAI;
         private Timer aiTimer;
+        private SoundPlayer dropSound;
 
         // 視覺設定
         private int circleSize = 60;   // 圓孔大小
@@ -92,6 +94,18 @@ namespace _3D_Connect_Four
             aiTimer = new Timer();
             aiTimer.Interval = 500;
             aiTimer.Tick += AiTimer_Tick;
+
+            try
+            {
+                // 這裡填入您的音效檔名稱，如果放在 Debug 資料夾下，直接寫檔名即可
+                dropSound = new SoundPlayer("freesound_community-place-100513.wav");
+                dropSound.LoadAsync(); // 非同步載入，避免卡頓
+            }
+            catch (Exception)
+            {
+                // 如果找不到檔案就不載入，避免程式崩潰
+                dropSound = null;
+            }
         }
 
         private void AiTimer_Tick(object sender, EventArgs e)
@@ -244,6 +258,7 @@ namespace _3D_Connect_Four
                 if (board[col, row] == 0)
                 {
                     board[col, row] = currentPlayer;
+                    if (dropSound != null) dropSound.Play();
 
                     // 檢查剛下的這步棋是否達成獲勝條件
                     if (CheckWin(col, row, currentPlayer))
