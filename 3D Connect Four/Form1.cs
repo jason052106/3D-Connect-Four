@@ -22,18 +22,22 @@ namespace _3D_Connect_Four
         private Label lblStatus;
         private bool isGameOver = false; // 新增這行：記錄遊戲是否結束
         private int hoveredCol = -1;
+        private TextBox txtPlayer1;
+        private TextBox txtPlayer2;
+        private CheckBox chkVsAI;
+        private bool isVsAI;
+        private Timer aiTimer;
 
         // 視覺設定
         private int circleSize = 60;   // 圓孔大小
         private int padding = 15;      // 圓孔間距
         private int boardStartX = 50;  // 棋盤左上角 X 座標
         private int boardStartY = 80;  // 棋盤左上角 Y 座標
-        public Form1()
+        public Form1(bool isVsAI)
         {
             InitializeComponent();
+            this.isVsAI = isVsAI; // 將傳進來的參數存起來
             SetupUI();
-
-            // 開啟雙緩衝，防止繪圖時畫面閃爍
             this.DoubleBuffered = true;
         }
         private void SetupUI()
@@ -53,14 +57,112 @@ namespace _3D_Connect_Four
             };
             this.Controls.Add(lblStatus);
 
+            // 玩家 1 名稱輸入框
+            txtPlayer1 = new TextBox
+            {
+                Location = new Point(20, 20),
+                Width = 100,
+                Text = "玩家 1",
+                ForeColor = Color.MediumVioletRed,
+                Font = new Font("微軟正黑體", 10, FontStyle.Bold)
+            };
+            txtPlayer1.TextChanged += (s, e) => UpdateStatusLabel(); // 名字改變時即時更新標題
+            this.Controls.Add(txtPlayer1);
+
+            // 玩家 2 名稱輸入框
+            txtPlayer2 = new TextBox
+            {
+                Location = new Point(20,50),
+                Width = 100,
+                Text = "玩家 2",
+                ForeColor = Color.DarkGoldenrod,
+                Font = new Font("微軟正黑體", 10, FontStyle.Bold)
+            };
+            txtPlayer2.TextChanged += (s, e) => UpdateStatusLabel();
+            this.Controls.Add(txtPlayer2);
+
             // 綁定滑鼠點擊與重繪事件
             this.Paint += Form1_Paint;
-            this.MouseClick += Form1_MouseClick;
+            //this.MouseClick += Form1_MouseClick;
 
             this.MouseMove += Form1_MouseMove;
             this.MouseLeave += Form1_MouseLeave;
+
+            // 新增：AI 思考的計時器 (設定 500 毫秒 = 0.5秒)
+            aiTimer = new Timer();
+            aiTimer.Interval = 500;
+            aiTimer.Tick += AiTimer_Tick;
         }
 
+        private void AiTimer_Tick(object sender, EventArgs e)
+        {
+            aiTimer.Stop(); // 停止計時，避免重複執行
+            if (isGameOver) return;
+
+            // 1. 攻擊：檢查 AI (玩家2) 是否差一步獲勝
+            int winningCol = FindBestMove(2);
+            if (winningCol != -1)
+            {
+                DropPiece(winningCol);
+                return;
+            }
+
+            // 2. 防守：檢查玩家1 是否差一步獲勝，進行阻擋
+            int blockingCol = FindBestMove(1);
+            if (blockingCol != -1)
+            {
+                DropPiece(blockingCol);
+                return;
+            }
+
+            // 3. 隨機：如果都沒有，隨機找一個沒滿的直行下棋
+            Random rnd = new Random();
+            int randomCol;
+            do
+            {
+                randomCol = rnd.Next(0, Cols);
+            } while (board[randomCol, 0] != 0); // 確保最頂端是空的 (這行沒滿)
+
+            DropPiece(randomCol);
+        }
+
+        // 尋找能讓特定玩家獲勝的行數
+        private int FindBestMove(int player)
+        {
+            for (int col = 0; col < Cols; col++)
+            {
+                int row = GetAvailableRow(col);
+                if (row != -1)
+                {
+                    // 假裝把棋子下在這裡
+                    board[col, row] = player;
+                    bool isWin = CheckWin(col, row, player);
+                    // 檢查完立刻把棋子拿起來 (復原)
+                    board[col, row] = 0;
+
+                    if (isWin) return col; // 如果這步會贏，就回傳這個行數
+                }
+            }
+            return -1; // 找不到能贏的步
+        }
+
+        // 取得特定直行最低的空位 Row
+        private int GetAvailableRow(int col)
+        {
+            for (int row = Rows - 1; row >= 0; row--)
+            {
+                if (board[col, row] == 0) return row;
+            }
+            return -1; // 滿了
+        }
+
+        private void UpdateStatusLabel()
+        {
+            if (isGameOver) return; // 如果遊戲結束就不改變狀態字眼
+
+            string currentPlayerName = (currentPlayer == 1) ? txtPlayer1.Text : txtPlayer2.Text;
+            lblStatus.Text = $"輪到 {currentPlayerName} 了！";
+        }
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -117,6 +219,8 @@ namespace _3D_Connect_Four
                 return;
             }
 
+            if (isVsAI && currentPlayer == 2) return;
+
             // 判斷點擊的是哪一個直行 (Column)
             int colWidth = circleSize + padding;
             int relativeX = e.X - boardStartX - padding / 2;
@@ -165,10 +269,16 @@ namespace _3D_Connect_Four
 
                     // 切換玩家
                     currentPlayer = (currentPlayer == 1) ? 2 : 1;
-                    lblStatus.Text = $"輪到您了！(玩家 {currentPlayer})";
                     lblStatus.ForeColor = (currentPlayer == 1) ? Color.MediumVioletRed : Color.DarkGoldenrod;
+                    UpdateStatusLabel();
 
                     this.Invalidate();
+
+                    if (currentPlayer == 2 && isVsAI && !isGameOver)
+                    {
+                        lblStatus.Text = "AI 思考中...";
+                        aiTimer.Start();
+                    }
                     return;
                 }
             }
